@@ -1,0 +1,5 @@
+# Conexao lida de MONGODB_URI (arquivo ../.env). Mesmo banco do crud_livros.py.
+development:
+  clients:
+    default:
+      uri: <%= ENV.fetch("MONGODB_URI", "mongodb://localhost:27017") %>

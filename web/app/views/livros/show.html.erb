@@ -1,0 +1,26 @@
+<% content_for :title, @livro.titulo %>
+<% content_for :crumb, @livro.titulo %>
+
+<div class="detail-grid">
+  <span class="cover lg" style="background:<%= capa_cor(@livro) %>"><%= iniciais(@livro) %></span>
+
+  <div>
+    <div class="page-head">
+      <div>
+        <div class="eyebrow"><%= Array(@livro.categorias).first || "Livro" %></div>
+        <h1><%= @livro.titulo %></h1>
+        <p class="subtitle"><%= @livro.autor %><%= " · #{@livro.ano}" if @livro.ano %></p>
+        <div style="margin-top:12px;display:flex;gap:14px;align-items:center">
+          <span class="pill <%= @livro.disponivel ? "ok" : "no" %>"><%= @livro.disponivel ? "Disponível" : "Emprestado" %></span>
+          <%= estrelas(@livro.avaliacao) %>
+        </div>
+      </div>
+      <div class="actions">
+        <%= link_to "Editar", edit_livro_path(@livro), class: "btn btn-primary" %>
+        <%= button_to "Excluir", @livro, method: :delete, class: "btn btn-danger", form: { data: { turbo_confirm: "Excluir \"#{@livro.titulo}\"?" } } %>
+      </div>
+    </div>
+
+    <div class="card detail-card"><%= render @livro %></div>
+  </div>
+</div>

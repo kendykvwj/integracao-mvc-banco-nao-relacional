@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+  <head>
+    <title><%= content_for(:title) || "Acervo de Livros" %></title>
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="application-name" content="Web">
+    <meta name="mobile-web-app-capable" content="yes">
+    <%= csrf_meta_tags %>
+    <%= csp_meta_tag %>
+
+    <%= yield :head %>
+
+    <%# Enable PWA manifest for installable apps (make sure to enable in config/routes.rb too!) %>
+    <%#= tag.link rel: "manifest", href: pwa_manifest_path(format: :json) %>
+
+    <link rel="icon" href="/icon.png" type="image/png">
+    <link rel="icon" href="/icon.svg" type="image/svg+xml">
+    <link rel="apple-touch-icon" href="/icon.png">
+
+    <%# Includes all stylesheet files in app/assets/stylesheets %>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <%= stylesheet_link_tag :app, "data-turbo-track": "reload" %>
+    <%= javascript_importmap_tags %>
+  </head>
+
+  <body>
+    <div class="shell">
+      <aside class="sidebar">
+        <%= link_to root_path, class: "logo" do %>
+          <span class="mark"><%= icone(:livros) %></span>
+          <span><strong>Biblioteca</strong><small>Acervo NoSQL</small></span>
+        <% end %>
+        <nav class="nav" aria-label="Principal">
+          <div class="label">Menu</div>
+          <%= link_to livros_path, class: ("active" if controller_name == "livros" && action_name == "index") do %><%= icone(:livros) %>Acervo<span class="count"><%= Livro.count %></span><% end %>
+          <%= link_to new_livro_path, class: ("active" if %w[new create].include?(action_name)) do %><%= icone(:mais) %>Novo livro<% end %>
+        </nav>
+        <div class="side-foot"><%= icone(:banco) %><div>Conectado a<code><%= Livro.collection.namespace %></code></div></div>
+      </aside>
+
+      <div class="main">
+        <header class="topbar">
+          <nav class="crumbs" aria-label="Você está em">
+            <%= link_to "Acervo", livros_path %>
+            <% if content_for?(:crumb) %><span class="sep">/</span><span class="here"><%= yield :crumb %></span><% end %>
+          </nav>
+          <span class="today"><%= Date.current.strftime("%d/%m/%Y") %></span>
+        </header>
+        <main class="content">
+          <% if notice.present? %>
+            <div class="callout" role="status"><%= icone(:check) %><div><%= notice %></div></div>
+          <% end %>
+          <%= yield %>
+        </main>
+      </div>
+    </div>
+  </body>
+</html>

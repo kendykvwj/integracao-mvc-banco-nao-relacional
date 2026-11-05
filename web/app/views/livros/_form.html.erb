@@ -1,0 +1,62 @@
+<div class="form-layout">
+  <%= form_with(model: livro, class: "card form-card") do |form| %>
+    <% if livro.errors.any? %>
+      <div class="callout warn" role="alert">
+        <div><div class="ct">Corrija antes de salvar</div>
+          <ul><% livro.errors.each do |error| %><li><%= error.full_message %></li><% end %></ul>
+        </div>
+      </div>
+    <% end %>
+
+    <fieldset class="fieldset">
+      <legend>Identificação</legend>
+      <p class="desc">Dados principais que aparecem na listagem.</p>
+      <div class="field">
+        <%= form.label :titulo, "Título *" %>
+        <%= form.text_field :titulo, required: true, placeholder: "Ex.: Dom Casmurro" %>
+      </div>
+      <div class="field">
+        <%= form.label :autor, "Autor *" %>
+        <%= form.text_field :autor, required: true, placeholder: "Ex.: Machado de Assis" %>
+      </div>
+      <div class="field">
+        <%= form.label :categorias %>
+        <%= form.text_field :categorias, value: Array(livro.categorias).join(", "), placeholder: "Romance, Clássico" %>
+        <div class="hint">Separe por vírgula. Fica salvo como array no documento.</div>
+      </div>
+    </fieldset>
+
+    <fieldset class="fieldset">
+      <legend>Publicação</legend>
+      <p class="desc">Informações da edição.</p>
+      <div class="field">
+        <%= form.label :editora %>
+        <%= form.text_field :editora %>
+      </div>
+      <div class="row">
+        <div class="field"><%= form.label :ano %><%= form.number_field :ano %></div>
+        <div class="field"><%= form.label :paginas, "Páginas" %><%= form.number_field :paginas, min: 1 %></div>
+        <div class="field"><%= form.label :avaliacao, "Avaliação (0–5)" %><%= form.number_field :avaliacao, step: 0.1, min: 0, max: 5 %></div>
+      </div>
+      <label class="toggle">
+        <%= form.checkbox :disponivel %>
+        <span>Disponível para empréstimo<small>Desmarque se o livro estiver emprestado.</small></span>
+      </label>
+    </fieldset>
+
+    <div class="form-actions">
+      <%= link_to "Cancelar", livro.persisted? ? livro : livros_path, class: "btn btn-outline" %>
+      <%= form.submit "Salvar livro", class: "btn btn-primary" %>
+    </div>
+  <% end %>
+
+  <aside class="card aside">
+    <h3>Como é salvo</h3>
+    <p>Cada livro vira um documento na coleção <code><%= Livro.collection.name %></code>.</p>
+    <ul style="margin-top:10px">
+      <li>Título e autor são obrigatórios.</li>
+      <li>Categorias viram um array.</li>
+      <li>Avaliação vai de 0 a 5.</li>
+    </ul>
+  </aside>
+</div>

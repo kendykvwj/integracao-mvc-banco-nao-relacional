@@ -1,0 +1,84 @@
+<% content_for :title, "Acervo" %>
+
+<div class="page-head">
+  <div>
+    <div class="eyebrow">Biblioteca</div>
+    <h1>Acervo de livros</h1>
+    <p class="subtitle">Consulte, cadastre e mantenha os livros guardados no MongoDB.</p>
+  </div>
+  <%= link_to new_livro_path, class: "btn btn-primary" do %><%= icone(:mais) %>Novo livro<% end %>
+</div>
+
+<% disp = @todos.count(&:disponivel); notas = @todos.map(&:avaliacao).compact %>
+<div class="stats">
+  <div class="card stat">
+    <div class="ic"><%= icone(:livros) %></div>
+    <div><div class="n"><%= @todos.size %></div><div class="l">títulos no acervo</div></div>
+  </div>
+  <div class="card stat">
+    <div class="ic ok"><%= icone(:check) %></div>
+    <div>
+      <div class="n"><%= disp %></div><div class="l">disponíveis para empréstimo</div>
+      <div class="bar"><span style="width:<%= @todos.empty? ? 0 : (disp * 100 / @todos.size) %>%"></span></div>
+    </div>
+  </div>
+  <div class="card stat">
+    <div class="ic gold"><%= icone(:estrela) %></div>
+    <div><div class="n"><%= notas.any? ? format("%.1f", notas.sum / notas.size) : "—" %></div><div class="l">avaliação média</div></div>
+  </div>
+</div>
+
+<div class="card">
+  <div class="toolbar">
+    <%= form_with url: livros_path, method: :get, class: "search", role: "search" do |f| %>
+      <%= icone(:busca) %>
+      <%= f.hidden_field :status, value: params[:status] if params[:status].present? %>
+      <%= f.search_field :q, value: params[:q], placeholder: "Buscar por título, autor ou categoria", "aria-label": "Buscar" %>
+    <% end %>
+    <div class="seg" role="group" aria-label="Filtrar por status">
+      <% [["Todos", nil], ["Disponíveis", "disponivel"], ["Emprestados", "emprestado"]].each do |rotulo, valor| %>
+        <%= link_to rotulo, livros_path(q: params[:q].presence, status: valor), class: ("on" if params[:status].presence == valor) %>
+      <% end %>
+    </div>
+  </div>
+
+  <div class="table-wrap">
+    <table class="t">
+      <thead>
+        <tr><th>Livro</th><th>Categorias</th><th>Ano</th><th>Páginas</th><th>Avaliação</th><th>Status</th><th><span class="sr-only">Ações</span></th></tr>
+      </thead>
+      <tbody>
+        <% @livros.each do |livro| %>
+          <tr id="<%= dom_id livro %>">
+            <td>
+              <div class="book">
+                <span class="cover" style="background:<%= capa_cor(livro) %>"><%= iniciais(livro) %></span>
+                <div><%= link_to livro.titulo, livro %><small><%= livro.autor %></small></div>
+              </div>
+            </td>
+            <td><% Array(livro.categorias).first(3).each do |c| %><span class="tag"><%= c %></span><% end %></td>
+            <td class="num"><%= livro.ano || "—" %></td>
+            <td class="num"><%= livro.paginas || "—" %></td>
+            <td><%= estrelas(livro.avaliacao) %></td>
+            <td><span class="pill <%= livro.disponivel ? "ok" : "no" %>"><%= livro.disponivel ? "Disponível" : "Emprestado" %></span></td>
+            <td>
+              <div class="actions">
+                <%= link_to "Editar", edit_livro_path(livro), class: "btn btn-ghost btn-sm" %>
+                <%= button_to "Excluir", livro, method: :delete, class: "btn btn-danger btn-sm", form: { data: { turbo_confirm: "Excluir \"#{livro.titulo}\"?" } } %>
+              </div>
+            </td>
+          </tr>
+        <% end %>
+        <% if @livros.empty? %>
+          <tr><td colspan="7" class="empty">
+            <% if params[:q].present? || params[:status].present? %>
+              <strong>Nada encontrado</strong>Nenhum livro corresponde ao filtro. <%= link_to "Limpar filtros", livros_path %>
+            <% else %>
+              <strong>O acervo está vazio</strong>Cadastre o primeiro livro para começar. <%= link_to "Novo livro", new_livro_path %>
+            <% end %>
+          </td></tr>
+        <% end %>
+      </tbody>
+    </table>
+  </div>
+</div>

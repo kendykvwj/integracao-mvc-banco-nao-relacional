@@ -1,0 +1,19 @@
+# Credenciais (nunca versionar)
+.env
+.env.*
+!.env.example
+
+# Python
+.venv/
+__pycache__/
+
+# Rails
+web/vendor/bundle/
+web/.bundle/
+web/log/*
+web/tmp/*
+!web/log/.keep
+!web/tmp/.keep
+web/storage/*
+web/config/master.key
+web/public/assets/

@@ -1,0 +1,8 @@
+<dl class="detail" id="<%= dom_id livro %>">
+  <dt>Autor</dt><dd><%= livro.autor %></dd>
+  <dt>Categorias</dt><dd><% Array(livro.categorias).each do |c| %><span class="tag"><%= c %></span><% end %><%= "—" if Array(livro.categorias).empty? %></dd>
+  <dt>Editora</dt><dd><%= livro.editora.presence || "—" %></dd>
+  <dt>Ano</dt><dd class="num"><%= livro.ano || "—" %></dd>
+  <dt>Páginas</dt><dd class="num"><%= livro.paginas || "—" %></dd>
+  <dt>ID do documento</dt><dd class="num"><%= livro.id %></dd>
+</dl>

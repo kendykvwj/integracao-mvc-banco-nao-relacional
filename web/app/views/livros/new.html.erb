@@ -1,0 +1,12 @@
+<% content_for :title, "Novo livro" %>
+<% content_for :crumb, "Novo livro" %>
+
+<div class="page-head">
+  <div>
+    <div class="eyebrow">Cadastro</div>
+    <h1>Novo livro</h1>
+    <p class="subtitle">Preencha os dados para incluir o livro no acervo.</p>
+  </div>
+</div>
+
+<%= render "form", livro: @livro %>
