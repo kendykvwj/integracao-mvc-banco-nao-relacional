@@ -1,0 +1,17 @@
+<section class="card panel">
+  <h2>Resenhas <small class="muted">(<%= livro.resenhas.size %>, embutidas no documento)</small></h2>
+  <%= form_with model: [livro, Resenha.new], class: "inline-form" do |f| %>
+    <%= f.text_field :leitor, placeholder: "Seu nome", required: true, "aria-label": "Leitor" %>
+    <%= f.select :nota, 5.downto(1).map { ["#{_1} ★", _1] }, {}, "aria-label": "Nota" %>
+    <%= f.text_field :texto, placeholder: "Comentário (opcional)", "aria-label": "Comentário" %>
+    <%= f.submit "Publicar", class: "btn btn-primary btn-sm" %>
+  <% end %>
+  <ul class="list">
+    <% livro.resenhas.each do |r| %>
+      <li>
+        <div><strong><%= r.leitor %></strong> <%= estrelas(r.nota) %><% if r.texto.present? %><p><%= r.texto %></p><% end %></div>
+        <%= button_to "Remover", livro_resenha_path(livro, r), method: :delete, class: "btn btn-ghost btn-sm" %>
+      </li>
+    <% end %>
+  </ul>
+</section>

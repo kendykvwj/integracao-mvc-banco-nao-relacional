@@ -1,0 +1,23 @@
+<section class="card panel">
+  <h2>Empréstimos <small class="muted">(histórico embutido)</small></h2>
+  <% if livro.disponivel %>
+    <%= form_with model: [livro, Emprestimo.new], class: "inline-form" do |f| %>
+      <%= f.text_field :leitor, placeholder: "Nome do leitor", required: true, "aria-label": "Leitor" %>
+      <%= f.submit "Emprestar", class: "btn btn-primary btn-sm" %>
+    <% end %>
+  <% end %>
+  <ul class="list">
+    <% livro.emprestimos.reverse_each do |e| %>
+      <li>
+        <div><strong><%= e.leitor %></strong>
+          <small class="muted">retirado <%= e.retirado_em.strftime("%d/%m/%Y") if e.retirado_em %><%= " · devolvido #{e.devolvido_em.strftime("%d/%m/%Y")}" if e.devolvido_em %></small></div>
+        <% if e.aberto? %>
+          <%= button_to "Registrar devolução", devolver_livro_emprestimo_path(livro, e), method: :patch, class: "btn btn-ghost btn-sm" %>
+        <% else %>
+          <span class="pill ok">Devolvido</span>
+        <% end %>
+      </li>
+    <% end %>
+    <% if livro.emprestimos.empty? %><li class="muted">Nunca emprestado.</li><% end %>
+  </ul>
+</section>

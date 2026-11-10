@@ -1,6 +1,12 @@
 Rails.application.routes.draw do
   root "livros#index"
-  resources :livros
+  get "painel" => "livros#painel"
+  resources :livros do
+    resources :resenhas, only: %i[create destroy]
+    resources :emprestimos, only: :create do
+      patch :devolver, on: :member
+    end
+  end
   # Define your application routes per the DSL in https://guides.rubyonrails.org/routing.html
 
   # Reveal health status on /up that returns 200 if the app boots with no exceptions, otherwise 500.

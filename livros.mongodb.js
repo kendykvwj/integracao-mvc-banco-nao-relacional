@@ -170,4 +170,64 @@ db.livros.aggregate([
   { $sort: { total: -1, _id: 1 } }
 ]).forEach(printjson);
 
+// ---------------------------------------------------------------------
+// 8. DOCUMENTOS EMBUTIDOS: resenhas e emprestimos vivem dentro do livro.
+// Uma leitura traz o livro completo, sem JOIN; cada escrita e atomica
+// por ser feita num unico documento.
+// ---------------------------------------------------------------------
+print("--- 8. EMBUTIDOS: resenha + emprestimo ---");
+db.livros.updateOne(
+  { titulo: "Dom Casmurro" },
+  { $push: { resenhas: { leitor: "Ana", nota: 5, texto: "Capitu tem olhos de ressaca.", created_at: new Date() } } }
+);
+// Emprestar = registrar o emprestimo E marcar indisponivel no mesmo update.
+db.livros.updateOne(
+  { titulo: "Dom Casmurro", disponivel: true },
+  { $push: { emprestimos: { leitor: "Bruno", retirado_em: new Date() } }, $set: { disponivel: false } }
+);
+printjson(db.livros.findOne({ titulo: "Dom Casmurro" }, { titulo: 1, disponivel: 1, resenhas: 1, emprestimos: 1 }));
+
+// ---------------------------------------------------------------------
+// 9. INDICES + EXPLAIN: mesma consulta antes e depois do indice.
+// COLLSCAN = varre a colecao inteira; IXSCAN = usa o indice.
+// ---------------------------------------------------------------------
+print("--- 9. EXPLAIN antes do indice ---");
+const plano = (q) => db.livros.find(q).explain("executionStats");
+const resumo = (e) => ({
+  estagio: JSON.stringify(e.queryPlanner.winningPlan).match(/COLLSCAN|IXSCAN/)[0],
+  docsExaminados: e.executionStats.totalDocsExamined,
+  retornados: e.executionStats.nReturned
+});
+printjson(resumo(plano({ categorias: "Fantasia" })));
+
+db.livros.createIndex({ categorias: 1 }); // multikey: uma entrada por item do array
+db.livros.createIndex(
+  { titulo: "text", autor: "text", categorias: "text" },
+  { name: "busca_texto", default_language: "portuguese" }
+);
+print("--- 9. EXPLAIN depois do indice ---");
+printjson(resumo(plano({ categorias: "Fantasia" })));
+
+print("--- 9. BUSCA TEXTUAL com ranking por relevancia ---");
+db.livros.find(
+  { $text: { $search: "machado romance" } },
+  { titulo: 1, score: { $meta: "textScore" } }
+).sort({ score: { $meta: "textScore" } }).forEach(printjson);
+
+// ---------------------------------------------------------------------
+// 10. $facet: varios relatorios numa unica agregacao (usado no /painel do Rails)
+// ---------------------------------------------------------------------
+print("--- 10. $facet ---");
+printjson(db.livros.aggregate([
+  { $facet: {
+    resumo: [{ $group: { _id: null, total: { $sum: 1 }, media: { $avg: "$avaliacao" },
+                         disponiveis: { $sum: { $cond: ["$disponivel", 1, 0] } } } }],
+    por_decada: [{ $match: { ano: { $type: "number" } } },
+                 { $group: { _id: { $multiply: [{ $floor: { $divide: ["$ano", 10] } }, 10] }, total: { $sum: 1 } } },
+                 { $sort: { _id: 1 } }],
+    resenhas: [{ $unwind: "$resenhas" },
+               { $group: { _id: "$titulo", media: { $avg: "$resenhas.nota" }, qtd: { $sum: 1 } } }]
+  } }
+]).toArray()[0]);
+
 print("--- Fim do script ---");

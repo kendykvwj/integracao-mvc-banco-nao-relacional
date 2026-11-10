@@ -3,13 +3,20 @@ class LivrosController < ApplicationController
 
   # GET /livros
   def index
-    @todos = Livro.all.to_a
+    @painel = Livro.painel
     @livros = Livro.order_by(titulo: :asc)
     if params[:q].present?
-      termo = /#{Regexp.escape(params[:q])}/i  # escape evita regex injetada pelo usuario
-      @livros = @livros.any_of({ titulo: termo }, { autor: termo }, { categorias: termo })
+      ids = Livro.ids_por_relevancia(params[:q])
+      @livros = ids.any? ? Livro.where(:_id.in => ids) : Livro.busca_regex(params[:q]).order_by(titulo: :asc)
     end
     @livros = @livros.where(disponivel: params[:status] == "disponivel") if %w[disponivel emprestado].include?(params[:status])
+    @livros = @livros.to_a
+    @livros.sort_by! { ids.index(_1.id) } if ids&.any? # mantem a ordem do textScore
+  end
+
+  # GET /painel
+  def painel
+    @painel = Livro.painel
   end
 
   # GET /livros/1
