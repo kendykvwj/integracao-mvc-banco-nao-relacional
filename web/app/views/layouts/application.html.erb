@@ -36,6 +36,7 @@
           <div class="label">Menu</div>
           <%= link_to livros_path, class: ("active" if controller_name == "livros" && action_name == "index") do %><%= icone(:livros) %>Acervo<span class="count"><%= Livro.count %></span><% end %>
           <%= link_to new_livro_path, class: ("active" if %w[new create].include?(action_name)) do %><%= icone(:mais) %>Novo livro<% end %>
+          <%= link_to painel_path, class: ("active" if action_name == "painel") do %><%= icone(:grafico) %>Painel<% end %>
         </nav>
         <div class="side-foot"><%= icone(:banco) %><div>Conectado a<code><%= Livro.collection.namespace %></code></div></div>
       </aside>
@@ -51,6 +52,9 @@
         <main class="content">
           <% if notice.present? %>
             <div class="callout" role="status"><%= icone(:check) %><div><%= notice %></div></div>
+          <% end %>
+          <% if alert.present? %>
+            <div class="callout warn" role="alert"><div><%= alert %></div></div>
           <% end %>
           <%= yield %>
         </main>

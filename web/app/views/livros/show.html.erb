@@ -22,5 +22,7 @@
     </div>
 
     <div class="card detail-card"><%= render @livro %></div>
+    <%= render "emprestimos", livro: @livro %>
+    <%= render "resenhas", livro: @livro %>
   </div>
 </div>

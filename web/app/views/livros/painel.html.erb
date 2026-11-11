@@ -1,0 +1,51 @@
+<% content_for :title, "Painel" %>
+<% content_for :crumb, "Painel" %>
+<% r = @painel["resumo"] %>
+
+<div class="page-head">
+  <div>
+    <div class="eyebrow">Aggregation Pipeline</div>
+    <h1>Painel do acervo</h1>
+    <p class="subtitle">Todos os números abaixo vêm de uma única chamada <code>aggregate</code> com <code>$facet</code>, calculada no MongoDB.</p>
+  </div>
+</div>
+
+<div class="stats">
+  <div class="card stat"><div class="ic"><%= icone(:livros) %></div><div><div class="n"><%= r["total"] %></div><div class="l">títulos</div></div></div>
+  <div class="card stat"><div class="ic gold"><%= icone(:estrela) %></div><div><div class="n"><%= r["resenhas"] || 0 %></div><div class="l">resenhas embutidas</div></div></div>
+  <div class="card stat"><div class="ic ok"><%= icone(:check) %></div><div><div class="n"><%= r["emprestimos"] || 0 %></div><div class="l">empréstimos registrados</div></div></div>
+</div>
+
+<div class="panel-grid">
+  <% { "Livros por categoria" => ["por_categoria", "$unwind + $group"],
+       "Livros por década" => ["por_decada", "$floor + $group"],
+       "Leitores mais ativos" => ["leitores", "$unwind emprestimos"] }.each do |titulo, (chave, op)| %>
+    <% linhas = @painel[chave]; max = linhas.map { _1["total"] }.max.to_i %>
+    <section class="card panel">
+      <h2><%= titulo %> <code><%= op %></code></h2>
+      <% if linhas.empty? %>
+        <p class="muted">Sem dados ainda.</p>
+      <% else %>
+        <ul class="hbars">
+          <% linhas.each do |l| %>
+            <li><span><%= chave == "por_decada" ? "#{l["_id"].to_i}s" : l["_id"] %></span>
+              <span class="hbar"><i style="width:<%= l["total"] * 100 / max %>%"></i></span><b><%= l["total"] %></b></li>
+          <% end %>
+        </ul>
+      <% end %>
+    </section>
+  <% end %>
+
+  <section class="card panel">
+    <h2>Mais bem resenhados <code>$avg resenhas.nota</code></h2>
+    <% if @painel["mais_resenhados"].empty? %>
+      <p class="muted">Nenhuma resenha ainda.</p>
+    <% else %>
+      <ul class="hbars">
+        <% @painel["mais_resenhados"].each do |l| %>
+          <li><span><%= link_to l["titulo"], livro_path(l["_id"].to_s) %></span><%= estrelas(l["media"].round(1)) %><b><%= l["qtd"] %></b></li>
+        <% end %>
+      </ul>
+    <% end %>
+  </section>
+</div>
